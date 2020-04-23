@@ -8,7 +8,11 @@ public:
     using iterator = typename std::list<std::pair<const KeyType, ValueType>>::iterator;
     using const_iterator = typename std::list<std::pair<const KeyType, ValueType>>::const_iterator;
 private:
-    std::list<std::pair<const KeyType, ValueType>> list;
+    using item_type = typename std::pair<const KeyType, ValueType>;
+    
+    const int REHASH_COEF = 2; 
+    
+    std::list<item_type> list;
     std::vector<std::list<std::pair<KeyType, iterator>>> backets;
     Hash hasher;
     size_t list_size;
@@ -35,7 +39,7 @@ public:
         }
     }
 
-    HashMap(std::initializer_list<std::pair<KeyType, ValueType>> init_list): HashMap(init_list.begin(), init_list.end()) {} 
+    HashMap(std::initializer_list<item_type> init_list): HashMap(init_list.begin(), init_list.end()) {} 
 
     Hash hash_function() const {
         return hasher;
@@ -65,7 +69,7 @@ public:
         return list.end();
     }
 
-    void insert(const std::pair<const KeyType, ValueType> &item) {
+    void insert(const item_type &item) {
         auto ind = _index_by_key(item.first);
         for (auto pr : backets[ind]) {
             if (item.first == pr.first) {
@@ -76,7 +80,7 @@ public:
         backets[ind].emplace_back(item.first, list.begin());
         ++list_size;
         if (list_size >= backets.size()) {
-            _reallocate(2 * backets.size());
+            _reallocate(REHASH_COEF * backets.size());
         }
     }
 
@@ -123,7 +127,7 @@ public:
         backets[ind].emplace_back(key, list.begin());
         ++list_size;
         if (list_size >= backets.size()) {
-            _reallocate(2 * backets.size());
+            _reallocate(REHASH_COEF * backets.size());
         }
         return list.begin()->second;
     }
